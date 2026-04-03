@@ -5,6 +5,8 @@ import api from './api';
 export default function UsersList() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'analyst' });
 
   useEffect(() => {
     fetchUsers();
@@ -22,6 +24,18 @@ export default function UsersList() {
     }
   };
 
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/users', newUser);
+      setShowAddForm(false);
+      setNewUser({ name: '', email: '', role: 'analyst' });
+      fetchUsers();
+    } catch (err) {
+      alert('Error: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
   const toggleStatus = async (id, status) => {
     try {
       await api.put(`/users/${id}`, { status: status === 'active' ? 'inactive' : 'active' });
@@ -36,10 +50,56 @@ export default function UsersList() {
           <ShieldCheck className="w-5 h-5 text-emerald-500" />
           Active Personnel
         </h3>
-        <button onClick={() => alert('New User Form')} className="flex items-center gap-2 bg-emerald-500 text-zinc-950 font-bold px-4 py-2 rounded-xl text-sm transition-all active:scale-95">
-          <UserPlus className="w-4 h-4" /> Add Member
-        </button>
+        {!showAddForm && (
+          <button 
+            onClick={() => setShowAddForm(true)} 
+            className="flex items-center gap-2 bg-emerald-500 text-zinc-950 font-bold px-4 py-2 rounded-xl text-sm transition-all active:scale-95"
+          >
+            <UserPlus className="w-4 h-4" /> Add Member
+          </button>
+        )}
       </div>
+
+      {showAddForm && (
+        <div className="bg-zinc-900 border border-emerald-500/20 p-6 rounded-3xl animate-in fade-in slide-in-from-top-4 duration-300">
+          <form onSubmit={handleAddUser} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">Name</label>
+              <input 
+                type="text" required
+                className="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl focus:outline-none focus:border-emerald-500/50"
+                value={newUser.name}
+                onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">Email</label>
+              <input 
+                type="email" required
+                className="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl focus:outline-none focus:border-emerald-500/50"
+                value={newUser.email}
+                onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">Role</label>
+              <select 
+                className="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl focus:outline-none focus:border-emerald-500/50"
+                value={newUser.role}
+                onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+              >
+                <option value="analyst">Analyst</option>
+                <option value="viewer">Viewer</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <div className="flex gap-2">
+              <button type="submit" className="flex-1 bg-emerald-500 text-zinc-950 font-bold py-3 rounded-xl text-sm">Create</button>
+              <button type="button" onClick={() => setShowAddForm(false)} className="px-4 py-3 bg-zinc-800 rounded-xl text-sm">Cancel</button>
+            </div>
+          </form>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (

@@ -8,7 +8,7 @@ const getAllRecords = async (req, res) => {
     const filter = {};
 
     if (type) filter.type = type;
-    if (category) filter.category = category;
+    if (category) filter.category = { $regex: category, $options: 'i' };
     if (startDate || endDate) {
       filter.date = {};
       if (startDate) filter.date.$gte = new Date(startDate);
