@@ -18,7 +18,8 @@ export default function AddRecordForm({ onRecordAdded, onClose }) {
       onRecordAdded(); // Refresh the parent table
       onClose(); // Hide form
     } catch (err) {
-      alert('Error creating record');
+      console.error('Submit error:', err);
+      alert('Error creating record: ' + (err.response?.data?.message || err.message));
     }
   };
 
